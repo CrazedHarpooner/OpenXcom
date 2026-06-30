@@ -745,7 +745,7 @@ BattleUnit *Tile::getOverlappingUnit(const SavedBattleGame *saveBattleGame, Tile
 	{
 		auto* tileBelow = saveBattleGame->getBelowTile(this);
 		bu = tileBelow->getUnit();
-		if (bu && bu->getHeight() + bu->getFloatHeight() - tileBelow->getTerrainLevel() <= static_cast<int>(range))
+		if (bu && bu->getHeight() + bu->getFloatHeight() - bu->getTile()->getTerrainLevel(bu->getArmor()->getSize()) <= static_cast<int>(range))
 		{
 			bu = nullptr; // if the unit below has no voxels poking into the tile, don't select it.
 		}
@@ -1093,6 +1093,28 @@ void Tile::resetObstacle(void)
 {
 	_obstacle = 0;
 }
+
+/**
+ * Terrainlevel goes from 0 to -24. For a larger sized unit, we need to pick the highest terrain level, which is the lowest number...
+ * @param size Size of the unit we want to get the level from.
+ * @return terrainlevel.
+ */
+int Tile::getTerrainLevel(int size) const
+{
+	int lowestlevel = 0;
+
+	for (int x = 0; x < size; x++)
+	{
+		for (int y = 0; y < size; y++)
+		{
+			int l = _save->getTile(_pos + Position(x, y, 0))->getTerrainLevel();
+			lowestlevel = std::min(lowestlevel, l);
+		}
+	}
+
+	return lowestlevel;
+}
+
 
 
 ////////////////////////////////////////////////////////////

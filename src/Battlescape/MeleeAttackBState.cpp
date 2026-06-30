@@ -143,8 +143,9 @@ void MeleeAttackBState::init()
 		throw Exception("This is a known (but tricky) bug... still fixing it, sorry. In the meantime, try save scumming option or kill all aliens in debug mode to finish the mission.");
 	}
 
-	int height = _target->getFloatHeight() + (_target->getHeight() / 2) - _parent->getSave()->getTile(_action.target)->getTerrainLevel();
-	_voxel = _action.target.toVoxel() + Position(8, 8, height);
+	int height = _target->getFloatHeight() + (_target->getHeight() / 2)	- _parent->getSave()->getTile(_action.target)->getTerrainLevel(_target->getArmor()->getSize());
+	// Using the battleUnit function instead of the battleAction Position. Could still use the battleAction but getPositionVexels does most of the job needed.
+	_voxel = _target->getPositionVexels() + Position(0, 0, height);
 
 	if (!_parent->getSave()->getTile(_voxel.toTile()))
 	{
@@ -227,7 +228,9 @@ void MeleeAttackBState::performMeleeAttack(int terrainMeleeTilePart)
 	_parent->getMap()->setCursorType(CT_NONE);
 
 	// offset the damage voxel ever so slightly so that the target knows which side the attack came from
-	Position difference = _unit->getPosition() - _action.target;
+	// if we have a target unit, use voxel position and convert back to tile.
+	Position difference = !_target ? _unit->getPosition() - _action.target : (_unit->getPositionVexels() - _target->getPositionVexels()).toTile();
+
 	// large units may cause it to offset too much, so we'll clamp the values.
 	difference.x = Clamp<Sint16>(difference.x, -1, 1);
 	difference.y = Clamp<Sint16>(difference.y, -1, 1);

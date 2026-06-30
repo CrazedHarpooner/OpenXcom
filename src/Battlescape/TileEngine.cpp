@@ -2189,7 +2189,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 	if (potentialUnit == excludeUnit) return false; //skip self
 
-	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
+	int targetMinHeight = targetVoxel.z - potentialUnit->getTile()->getTerrainLevel(potentialUnit->getArmor()->getSize());
 	targetMinHeight += potentialUnit->getFloatHeight();
 
 	int targetMaxHeight = targetMinHeight;
@@ -3274,13 +3274,14 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 		if (bu && bu->getHealth() > 0)
 		{
 			int verticaloffset = 0;
-			if (bu != tile->getUnit())
+			/*if (bu != tile->getUnit())
 			{
-				verticaloffset = 24;
-			}
+				verticaloffset = 24; // We no longer need this offset as we retrieve the bu position directly a few lines below.
+			} */
 			const int sz = bu->getArmor()->getSize() * 8;
-			const Position target = bu->getPosition().toVoxel() + Position(sz,sz, bu->getFloatHeight() - tile->getTerrainLevel());
-			const Position relative = (center - target) - Position(0,0,verticaloffset);
+			// We obtain the bu position directy without the need to add a vertical offset.
+			const Position target = bu->getPosition().toVoxel() + Position(sz, sz, bu->getFloatHeight() - _save->getTile(bu->getPosition())->getTerrainLevel(bu->getArmor()->getSize()));
+			const Position relative = (center - target); //- Position(0,0,verticaloffset);
 
 			hitUnit(attack, bu, relative, damage, type, rangeAtack);
 			if (bu->getFire())
@@ -5371,9 +5372,13 @@ bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attack
 				{
 					targetTile = aboveTargetTile;
 				}
-				else if (belowTargetTile && targetTile->hasNoFloor(_save) && !targetTile->getUnit() && belowTargetTile->getTerrainLevel() <= -16)
+				else if (belowTargetTile && targetTile->hasNoFloor(_save) && !targetTile->getUnit())
 				{
-					targetTile = belowTargetTile;
+					BattleUnit *buBelowTarget = belowTargetTile->getUnit();
+					if (buBelowTarget && buBelowTarget->getTile()->getTerrainLevel(buBelowTarget->getArmor()->getSize()) <= -16)
+					{
+						targetTile = belowTargetTile;
+					}
 				}
 				if (targetTile->getUnit())
 				{

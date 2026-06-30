@@ -224,6 +224,13 @@ public:
 	}
 
 	/**
+	 * Terrainlevel goes from 0 to -24. For a larger sized unit, we need to pick the highest terrain level, which is the lowest number...
+	 * @param size Size of the unit we want to get the level from.
+	 * @return terrainlevel.
+	 */
+	int getTerrainLevel(int size) const;
+
+	/**
 	 * Gets the tile's position.
 	 * @return position
 	 */

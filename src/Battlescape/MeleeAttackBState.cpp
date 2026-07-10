@@ -144,7 +144,8 @@ void MeleeAttackBState::init()
 	}
 
 	int height = _target->getFloatHeight() + (_target->getHeight() / 2) - _parent->getSave()->getTile(_action.target)->getTerrainLevel();
-	_voxel = _action.target.toVoxel() + Position(8, 8, height);
+	// Using the battleUnit function instead of the battleAction Position. Could still use the battleAction but getPositionVexels does most of the job needed.
+	_voxel = _target->getPositionVexels() + Position(0, 0, height);
 
 	if (!_parent->getSave()->getTile(_voxel.toTile()))
 	{

@@ -2189,7 +2189,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 	if (potentialUnit == excludeUnit) return false; //skip self
 
-	int targetMinHeight = targetVoxel.z - potentialUnit->getTile()->getTerrainLevel(potentialUnit->getArmor()->getSize());
+	int targetMinHeight = targetVoxel.z - potentialUnit->getTerrainLevel(_save);
 	targetMinHeight += potentialUnit->getFloatHeight();
 
 	int targetMaxHeight = targetMinHeight;
@@ -3280,7 +3280,7 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 			} */
 			const int sz = bu->getArmor()->getSize() * 8;
 			// We obtain the bu position directy without the need to add a vertical offset.
-			const Position target = bu->getPosition().toVoxel() + Position(sz, sz, bu->getFloatHeight() - _save->getTile(bu->getPosition())->getTerrainLevel(bu->getArmor()->getSize()));
+			const Position target = bu->getPosition().toVoxel() + Position(sz, sz, bu->getFloatHeight() - bu->getTerrainLevel(_save));
 			const Position relative = (center - target); //- Position(0,0,verticaloffset);
 
 			hitUnit(attack, bu, relative, damage, type, rangeAtack);
@@ -5372,13 +5372,9 @@ bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attack
 				{
 					targetTile = aboveTargetTile;
 				}
-				else if (belowTargetTile && targetTile->hasNoFloor(_save) && !targetTile->getUnit())
+				else if (belowTargetTile && targetTile->hasNoFloor(_save) && !targetTile->getUnit() && belowTargetTile->getUnit() && belowTargetTile->getUnit()->getTerrainLevel(_save) <= -16)
 				{
-					BattleUnit *buBelowTarget = belowTargetTile->getUnit();
-					if (buBelowTarget && buBelowTarget->getTile()->getTerrainLevel(buBelowTarget->getArmor()->getSize()) <= -16)
-					{
-						targetTile = belowTargetTile;
-					}
+					targetTile = belowTargetTile;
 				}
 				if (targetTile->getUnit())
 				{

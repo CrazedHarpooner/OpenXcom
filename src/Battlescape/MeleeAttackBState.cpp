@@ -142,8 +142,8 @@ void MeleeAttackBState::init()
 	{
 		throw Exception("This is a known (but tricky) bug... still fixing it, sorry. In the meantime, try save scumming option or kill all aliens in debug mode to finish the mission.");
 	}
-
-	int height = _target->getFloatHeight() + (_target->getHeight() / 2)	- _parent->getSave()->getTile(_action.target)->getTerrainLevel(_target->getArmor()->getSize());
+	// We use a new BattleUnit call to obtain the terrain for either size unit.
+	int height = _target->getFloatHeight() + (_target->getHeight() / 2)	- _target->getTerrainLevel(_parent->getSave());
 	// Using the battleUnit function instead of the battleAction Position. Could still use the battleAction but getPositionVexels does most of the job needed.
 	_voxel = _target->getPositionVexels() + Position(0, 0, height);
 

@@ -228,7 +228,9 @@ void MeleeAttackBState::performMeleeAttack(int terrainMeleeTilePart)
 	_parent->getMap()->setCursorType(CT_NONE);
 
 	// offset the damage voxel ever so slightly so that the target knows which side the attack came from
-	Position difference = _unit->getPosition() - _action.target;
+	// Calculate difference between attacking unit and target tile (in tiles) or attacking unit center and target unit center (in voxels converted to tiles). This corrects directional bias.
+	Position difference = !_target ? _unit->getPosition() - _action.target : (_unit->getPositionVexels() - _target->getPositionVexels()).toTile();
+
 	// large units may cause it to offset too much, so we'll clamp the values.
 	difference.x = Clamp<Sint16>(difference.x, -1, 1);
 	difference.y = Clamp<Sint16>(difference.y, -1, 1);

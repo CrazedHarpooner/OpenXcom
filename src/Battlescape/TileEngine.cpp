@@ -2189,7 +2189,7 @@ bool TileEngine::canTargetUnit(Position *originVoxel, Tile *tile, Position *scan
 
 	if (potentialUnit == excludeUnit) return false; //skip self
 
-	int targetMinHeight = targetVoxel.z - tile->getTerrainLevel();
+	int targetMinHeight = targetVoxel.z - potentialUnit->getTerrainLevel(_save); // Change required for correctly targetting size 2 units over uneven terrain.
 	targetMinHeight += potentialUnit->getFloatHeight();
 
 	int targetMaxHeight = targetMinHeight;
@@ -3273,14 +3273,16 @@ void TileEngine::hit(BattleActionAttack attack, Position center, int power, cons
 		BattleUnit *bu = tile->getOverlappingUnit(_save);
 		if (bu && bu->getHealth() > 0)
 		{
+			/* verticaloffset is no longer required, the new function obtains the exact elevation of the unit's center
 			int verticaloffset = 0;
 			if (bu != tile->getUnit())
 			{
 				verticaloffset = 24;
 			}
+			*/
 			const int sz = bu->getArmor()->getSize() * 8;
-			const Position target = bu->getPosition().toVoxel() + Position(sz,sz, bu->getFloatHeight() - tile->getTerrainLevel());
-			const Position relative = (center - target) - Position(0,0,verticaloffset);
+			const Position target = bu->getPosition().toVoxel() + Position(sz, sz, bu->getFloatHeight() - bu->getTerrainLevel(_save)); // Chang required to correctly obtain elevation of size 2 units
+			const Position relative = (center - target); // We no longer need to subtract the verticaloffset
 
 			hitUnit(attack, bu, relative, damage, type, rangeAtack);
 			if (bu->getFire())
@@ -5372,7 +5374,7 @@ bool TileEngine::validMeleeRange(Position pos, int direction, BattleUnit *attack
 				{
 					targetTile = aboveTargetTile;
 				}
-				else if (belowTargetTile && targetTile->hasNoFloor(_save) && !targetTile->getUnit() && belowTargetTile->getTerrainLevel() <= -16)
+				else if (belowTargetTile && targetTile->hasNoFloor(_save) && !targetTile->getUnit() && belowTargetTile->getUnit() && belowTargetTile->getUnit()->getTerrainLevel(_save) <= -16) // Due to how size 2 units are elevated over uneven terrain, we need to use the new function for it.
 				{
 					targetTile = belowTargetTile;
 				}
